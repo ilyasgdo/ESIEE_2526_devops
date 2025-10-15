@@ -1,0 +1,4 @@
+- AWS Educate : https://aws.amazon.com/fr/education/awseducate/
+- Details about AWS Free tier : https://repost.aws/fr/knowledge-center/what-is-free-tier
+- Details about AWS Free Tier charges : https://repost.aws/fr/knowledge-center/free-tier-charges
+- All about AWS Free tier offer : https://aws.amazon.com/fr/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=tier%2312monthsfree%7Ctier%23always-free&awsf.Free%20Tier%20Categories=*all
