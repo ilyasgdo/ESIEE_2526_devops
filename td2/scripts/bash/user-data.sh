@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-set -e
+set -xe
+
+yum update -y
 
 curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
 yum install -y nodejs
 
-tee app.js > /dev/null << "EOF"
+cat > /home/ec2-user/app.js << 'EOF'
 const http = require('http');
 
 const server = http.createServer((req, res) => {
@@ -19,4 +21,4 @@ server.listen(port,() => {
 });
 EOF
 
-nohup node app.js &
+nohup node /home/ec2-user/app.js &

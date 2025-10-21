@@ -1,0 +1,85 @@
+- name: Cleanup all AWS resources to avoid charges
+  hosts: localhost
+  gather_facts: no
+  environment:
+    AWS_REGION: us-east-2
+  tasks:
+    - name: Get all instances with Ansible tags
+      amazon.aws.ec2_instance_info:
+        filters:
+          "tag:Ansible": ["ch2_instances", "ch2_multiple_instances"]
+          "instance-state-name": ["running", "pending", "stopping", "stopped"]
+      register: ansible_instances
+
+    - name: Display instances to be terminated
+      debug:
+        msg: |
+          Found {{ ansible_instances.instances | length }} instances to terminate:
+          {% for instance in ansible_instances.instances %}
+          - {{ instance.instance_id }} ({{ instance.tags.Name | default('No Name') }}) - {{ instance.state.name }}
+          {% endfor %}
+      when: ansible_instances.instances | length > 0
+
+    - name: Terminate all Ansible-created instances
+      amazon.aws.ec2_instance:
+        instance_ids: "{{ ansible_instances.instances | map(attribute='instance_id') | list }}"
+        state: terminated
+        wait: true
+        wait_timeout: 300
+      when: ansible_instances.instances | length > 0
+      register: terminated_instances
+
+    - name: Wait for instances to be fully terminated
+      pause:
+        seconds: 30
+      when: ansible_instances.instances | length > 0
+
+    - name: Delete security groups
+      amazon.aws.ec2_security_group:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - sample-app-ansible
+        - sample-app-ansible-multi
+      ignore_errors: yes
+      register: sg_deletion
+
+    - name: Delete key pairs
+      amazon.aws.ec2_key:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - ansible-ch2
+        - ansible-ch2-multi
+      register: key_deletion
+
+    - name: Remove local key files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - ansible-ch2.key
+        - ansible-ch2-multi.key
+      delegate_to: localhost
+
+    - name: Final verification - Check remaining resources
+      amazon.aws.ec2_instance_info:
+        filters:
+          "tag:Ansible": ["ch2_instances", "ch2_multiple_instances"]
+      register: remaining_instances
+
+    - name: Display cleanup summary
+      debug:
+        msg: |
+          === CLEANUP SUMMARY ===
+          Instances terminated: {{ terminated_instances.instance_ids | default([]) | length }}
+          Security groups deleted: {{ sg_deletion.results | selectattr('changed', 'equalto', true) | list | length }}
+          Key pairs deleted: {{ key_deletion.results | selectattr('changed', 'equalto', true) | list | length }}
+          Remaining instances: {{ remaining_instances.instances | length }}
+          
+          {% if remaining_instances.instances | length == 0 %}
+          ✅ ALL RESOURCES CLEANED UP SUCCESSFULLY!
+          ✅ NO MORE CHARGES EXPECTED!
+          {% else %}
+          ⚠️  WARNING: {{ remaining_instances.instances | length }} instances still exist!
+          {% endif %}
