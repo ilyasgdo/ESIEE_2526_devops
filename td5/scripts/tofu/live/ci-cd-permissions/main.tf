@@ -17,14 +17,12 @@ module "iam_roles" {
 
   enable_iam_role_for_testing = true                            
 
-  # TODO: fill in your own repo name here!
-  github_repo      = "brikis98/fundamentals-of-devops-examples" 
+  github_repo      = "ilyasgdo/ESIEE_2526_devops" 
   lambda_base_name = "lambda-sample"                            
 
   enable_iam_role_for_plan  = true                                
   enable_iam_role_for_apply = true                                
 
-  # TODO: fill in your own bucket and table name here!
-  tofu_state_bucket         = "fundamentals-of-devops-tofu-state" 
-  tofu_state_dynamodb_table = "fundamentals-of-devops-tofu-state" 
+  tofu_state_bucket         = "tofu-state-118499504231-ilyasgdo" 
+  tofu_state_dynamodb_table = "tofu-state-118499504231-ilyasgdo" 
 }

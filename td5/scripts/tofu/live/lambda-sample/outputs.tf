@@ -1,3 +1,3 @@
 output "api_endpoint" {
-  value = module.gateway.api_endpoint
+  value = module.function.function_url
 }
